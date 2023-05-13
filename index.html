@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, user-scalable = no,initial-scale=0.9">
+    <title>QR_CAM</title>
+    <link rel="stylesheet" type="text/css" href="./bootstrap.css">
+    <script src="./xlsx.min.js"></script>    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    <script "type=text/javascript" src ="./html5-qrcode.min.js"></script>
+    <script src="jquery-3.6.0.min.js"></script> </script>
+    <script "type=text/javascript" src ="./SQLinsert.js"></script>
+    <script "type=text/javascript" src ="./excel_insert.js"></script>
+    <style>
+    main{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position : fixed;
+    }
+    #reader{
+        width: "device-width";
+        text-align: center;
+        position: fixed;
+        top : 0rem;
+        right : 20rem;
+        left: 0rem;
+    }
+    #result{
+        text-align: center;
+        font-size: 1.5rem;
+        position: fixed;
+        top : 4rem;
+        right : 4rem;
+    }
+    </style>
+
+</head>
+<body>
+
+
+    
+    <div id = "reader"></div>
+    <div id = "result"></div>
+    <script>
+        var result;
+        const scanner =new Html5QrcodeScanner("reader",{qrbox:{width:250, height:250},fps: 20});
+        scanner.render(sucess);
+        function sucess(result){
+            console.log(result);
+            document.getElementById("result").innerHTML=`<h3>SUCCESS!</h3><p><a href = ></a>"${result}"</p>`;
+            document.getElementById("instrument").value = result;
+            // this `` operator is hell lotg important 
+            scanner.clear();
+            document.getElementById('reader').remove();
+        }
+    </script>
+
+
+    <div class="container" >
+
+        <div class ="search">
+            <form>
+                <fieldset>
+                    <legend><h3>Search Instrument</h3></legend>
+                    <button type="button"  id="search_btn" class="btn btn-success"  style="float: right"><span  class= "bi bi-search"></span> Search </button>
+                    <div style="overflow: hidden; padding-right: 1rem;">
+                        <input type="text" class="form-control" style="width: 100%;" id="search_text" placeholder="Search UMC No. , Instrument , location"><span id="name-msg"></span>
+                    </div>
+                    <table class="table table-bordered table-hover" id ="search_item"></table>
+        
+                </fieldset>
+                
+            </form>
+        </div>
+    <div class ="row">
+        
+        <form>
+            <fieldset>
+                <legend><h3>Instrument</h3></legend>
+                <input  type="text" class="form-control" name="" id="instrument" placeholder="Enter UMC No. here" value="">
+                <!-- <script>
+                    if (document.getElementById("result").value != null){
+                        document.getElementById("instrument").value=document.getElementById("result").value;
+                    }
+                </script> -->
+                <legend><h3>Quantity</h3></legend>
+                <input type="number" class="form-control" name="" id="quantity" placeholder="Enter Quantity">
+
+                
+            <br></br>
+            <button type="button" id="insert" class="btn btn-success">Insert</button>
+            <button type="button" id="create" class="btn btn-success">Create Table</button>
+            <button type="button" id="remove" class="btn btn-danger">Delete Table</button>
+            <button type="button" id="fetch" class="btn btn-success">Record</button>
+        </fieldset>
+        <br>
+        <table class="table table-bordered table-hover" id ="itemlist" border="1"><h3> RECORD </h3>
+            
+        </table>
+        
+        </form>
+        
+
+    </div>
+   
+    <div class="excel">
+    
+    <input type="file" id="file_upload" />
+    <button type="button"  id="excel" class="btn btn-success"  style="margin-left: 50%;"><span  class= ""> Insert Excel</span></button>
+    <br>
+    <br>
+    <table class="table table-bordered table-hover" id="display_excel_data" border="1"></table>
+
+    </div>
+
+
+    </div>
+    <style>
+        .row{
+        /* border: 1px solid black; */
+        /* margin: 1rem; */
+        padding: 2rem 1rem;
+        text-align: center;
+        margin-bottom: 2rem;
+       
+        
+        /* border: 1px solid red; */
+   
+        }
+        .search {
+        display: inline-flexbox;
+        text-align: center;
+        /* border: 1px solid red; */
+        /* padding: 2rem 8rem; */
+        vertical-align: top;
+        margin-left: 35rem; 
+        margin-right: 3rem;
+        position: relative;
+        top : 8.1rem;
+        left: 6rem;
+        right : 0rem;
+        /* border: 1px solid red; */
+        height: auto;
+        width: 25rem;
+
+        }
+        .excel{
+            margin-bottom: 2rem;
+        }
+    </style>
+
+
+    <!-- <h3>${result}</h3> -->
+</body>
+</html>
