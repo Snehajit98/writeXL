@@ -37,44 +37,47 @@ $(function(){
     var item_input = $("#instrument").val()
     var qty_input = $("#quantity").val();
 
-
+    //insert_function(item_input,qty_input);
     db.transaction(function(transaction){
-       // sql = "SELECT * FROM items WHERE item="+item_input+" ORDER BY id ASC"; //THIS IS PERFECT. BUT LETS TRY SOMETHING ELSE.
-       sql = "SELECT * FROM items WHERE item LIKE '%"+item_input+"%' ORDER BY id ASC";
-        transaction.executeSql(sql, undefined,function(transaction,result){
-            if(result.rows.length){
-                for(var i=0;i<result.rows.length;i++){
-                    var row = result.rows.item(i);
-                    var id = row.id;
-                    var quantity = Number(row.quantity)+Number(qty_input);
+        // sql = "SELECT * FROM items WHERE item="+item_input+" ORDER BY id ASC"; //THIS IS PERFECT. BUT LETS TRY SOMETHING ELSE.
+        sql = "SELECT * FROM items WHERE item LIKE '%"+item_input+"%' ORDER BY id ASC";
+         transaction.executeSql(sql, undefined,function(transaction,result){
+             if(result.rows.length){
+                 for(var i=0;i<result.rows.length;i++){
+                     var row = result.rows.item(i);
+                     var id = row.id;
+                     var quantity = Number(row.quantity)+Number(qty_input);
+    
+                     db.transaction(function(transaction){
+                         sql = "UPDATE items SET quantity = "+quantity+" WHERE id ="+id+""
+                         transaction.executeSql(sql,[])
+                         });
+                     
+                     loadData();
+    
+                 }}
+                 else{
+    
+    
+                     db.transaction(function(transaction){
+    
+                         sql = "INSERT INTO items(item,quantity) VALUES(?,?)";
+                         transaction.executeSql(sql,[item_input,qty_input],
+                         function(){alert("item added successfully")},
+                         function(transaction,err){alert(//err.message//
+                         "No Database Found. Create a database first")});
+                         loadData();
+                         
+                     });
+    
+    
+                 }
+             },function(transaction,err){
+                     alert(err.message);
+                 });
+    
+         });
 
-                    db.transaction(function(transaction){
-                        sql = "UPDATE items SET quantity = "+quantity+" WHERE id ="+id+""
-                        transaction.executeSql(sql,[])
-                        });
-                    
-                    loadData();
-
-                }}
-                else{
-                 db.transaction(function(transaction){
-
-                        sql = "INSERT INTO items(item,quantity) VALUES(?,?)";
-                        transaction.executeSql(sql,[item_input,qty_input],
-                        function(){alert("item added successfully")},
-                        function(transaction,err){alert(//err.message//
-                        "No Database Found. Create a database first")});
-                        loadData();
-                        
-                    });
-
-
-                }
-            },function(transaction,err){
-                    alert(err.message);
-                });
-
-        });
 
 
     });
@@ -104,7 +107,7 @@ function loadData(){
    
                     htmlData += `<tr><td>`+id+`</td><td>`+item+`</td><td>`+quantity+`</td>
                         <td><button type="button" id=`+button_id+` class="btn btn-danger"><span class="bi bi-trash-fill" style="font-size:1rem"></span> Delete</button></td>
-           .0            <td><button type="button" id=`+button_id+` class="btn btn-primary"><span class="bi bi-pencil-square" style="font-size:1rem"></span> Edit</button></td>
+                     <td><button type="button" id=`+button_id+` class="btn btn-primary"><span class="bi bi-pencil-square" style="font-size:1rem"></span> Edit</button></td>
                         </tr>`;
 
                 }
@@ -149,7 +152,10 @@ function loadData(){
     }
 
     $("#search_btn").click(function(){
-        load_search();
+        
+        var search_word = $("#search_text").val()
+        load_search(search_word);
+        
     });
 
 
@@ -158,9 +164,9 @@ function loadData(){
 
 
 
-    function load_search(){
+    function load_search( search_word ){
         $("#search_item").children().remove();
-        var search_word = $("#search_text").val()
+        
 
        if(search_word){
         db.transaction(function(transaction){
@@ -181,7 +187,11 @@ function loadData(){
                       // $("#search_item").remove()
 
                     }}
-                    else{ $("#search_item").append("No Data Found")}
+                    else{ 
+                       // $("#search_item").clear()
+                      
+                        $("#search_item").append("No Data Found")}
+
                 },function(transaction,err){
                         alert(/*err.message*/"No Database Found");
                     });
@@ -199,55 +209,111 @@ function loadData(){
 
 
 
+
+$("#excel").click(function()
+
+{var files = document.getElementById('file_upload').files;
+if(files.length==0){
+  alert("Please choose any file...");
+  return;
+}
+var filename = files[0].name;
+var extension = filename.substring(filename.lastIndexOf(".")).toUpperCase();
+if (extension == '.XLS' || extension == '.XLSX') {
+    //Here calling another method to read excel file into json
+    excelFileToJSON(files[0]);
+}else{
+    alert("Please select a valid excel file.");
+} });
+ 
+ // Method to read excel file and convert it into JSON 
+  function excelFileToJSON(file){
+      try {
+        var reader = new FileReader();
+        reader.readAsBinaryString(file);
+        reader.onload = function(e) {
+
+            var data = e.target.result;
+            var workbook = XLSX.read(data, {
+                type : 'binary'
+            });
+            var result = {};
+            var firstSheetName = workbook.SheetNames[0];
+            //reading only first sheet data
+            var jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheetName]);
+            //console.log(jsonData);
+            //displaying the json result into HTML table
+            displayJsonToHtmlTable(jsonData);
+            }
+        }catch(e){
+            console.error(e);
+        }
+  }
   
-//  // Method to display the data in HTML Table
-//   function displayJsonToHtmlTable(jsonData){
+ // Method to display the data in HTML Table
+  function displayJsonToHtmlTable(jsonData){
+  //  console.log(jsonData)
+  if(jsonData.length>0){
+    //var htmlData='<tr><th>Instrument</th><th>UMC No.</th><th>Quantity</th><th>Place</th></tr>';
+    for(var i=0;i<jsonData.length;i++){
+        var row=jsonData[i];
+       //alert(row["UMC No."])
+       console.log(row["UMC No."])
 
-//     var item_input = $("#instrument").val()
-//     var qty_input = $("#quantity").val();
 
 
-//     db.transaction(function(transaction){
-//         // sql = "SELECT * FROM items WHERE item="+item_input+" ORDER BY id ASC"; //THIS IS PERFECT. BUT LETS TRY SOMETHING ELSE.
-//         sql = "SELECT * FROM items WHERE item LIKE '%"+item_input+"%' ORDER BY id ASC";
-//          transaction.executeSql(sql, undefined,function(transaction,result){
-//              if(result.rows.length){
-//                  for(var i=0;i<result.rows.length;i++){
-//                      var row = result.rows.item(i);
-//                      var id = row.id;
-//                      var quantity = Number(row.quantity)+Number(qty_input);
- 
-//                      db.transaction(function(transaction){
-//                          sql = "UPDATE items SET quantity = "+quantity+" WHERE id ="+id+""
-//                          transaction.executeSql(sql,[])
-//                          });
-                     
-//                      loadData();
- 
-//                  }}
-//                  else{
-//                      db.transaction(function(transaction){
- 
-//                          sql = "INSERT INTO items(item,quantity) VALUES(?,?)";
-//                          transaction.executeSql(sql,[item_input,qty_input],
-//                          function(){alert("item added successfully")},
-//                          function(transaction,err){alert(//err.message//
-//                          "No Database Found. Create a database first")});
-//                          loadData();
-                         
-//                      });
- 
-//                  }
-//              },
-//             function(transaction,err){
-//                      alert(err.message);
-//                  });
-//          });
-//     }
+       
+       db.transaction(function(transaction){
+        sql = "SELECT * FROM items WHERE item LIKE '%"+row["UMC No."]+"%' ORDER BY id ASC";
+
+        //runs perfectly upto this point 
+        transaction.executeSql(sql, undefined,function(transaction,result){
+
+            //this is where issue is occuring.
+            /*instead of for loop... 
+            we will try forEach() method. 
+            it is iterating method for 
+            object or arrays in javascript*/
+            if(result.rows.length){
+                alert("hi if")
+                // for(var i=0;i<result.rows.length;i++){
+                //     var row = result.rows.item(i);
+                //     var id = row.id;
+                //     var item = row.item;
+                //     var quantity = row.quantity;
+                //     alert('present',item,quantity)
+
+                // }
+            }
+                else{ 
+                    alert(row["UMC No."])
+
+                    // for(var i=0;i<result.rows.length;i++){
+                    //     var row = result.rows.item(i);
+                    //     var id = row.id;
+                    //     var item = row.item;
+                    //     var quantity = row.quantity;
+                    //     alert(item)
+
+                    // }
+                }
+
+                }
+
+                   // $("#search_item").append("No Data Found")}
+
+            ,function(transaction,err){
+                    alert(/*err.message*/"No Database Found");
+                });
+            });
+
+       
+
+             
+    }
+}
+}
 
 
 
 })
-
-
-
